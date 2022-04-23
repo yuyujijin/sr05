@@ -1,0 +1,29 @@
+#    wha
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### WEB GUI COMMUNICATION MODULE ###############################################
+
+APG_vrb_dispnotif "  Loading mut-web.tk (web GUI module)" "mut-web" 3
+
+#-- Procedure APG_web_receive -------------------------------------------------#
+# Action : analyzing a JSON msg sent by the web GUI                            #
+# Remark : Overloading of the libapg-app-web.tk default procedure              #
+# Input  : JSON message                                                        #
+# Output : nothin                                                              #
+#------------------------------------------------------------------------------#
+proc APG_web_receive { JSON } {
+		set type [APG_web_parseJSON JSON "type"]
+
+		switch -- $type \
+				"msg2snd" {
+						# SeRequest for the current team
+						set ::WHA_snd_msg [APG_web_parseJSON JSON "payload"]
+						APG_send_what $::WHA_snd_msg
+				} \
+				default {
+						APG_vrb_dispwarning "receiving a JSON without known type => ignored \[$JSON\]" "APG_web_receive"
+				}
+}
+		

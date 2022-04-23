@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+
+	<link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
+	<link rel="shortcut icon" href="ico/favicon.ico">
+
+	<title>Airplug WHAtk on __IDENT__</title>
+
+	<style>
+	 line {
+			 width:33%;
+			 float:left;
+	 }
+	 h1 {
+			 text-align: center;
+			 font-size: 30px;
+			 color: #000;
+			 border-top: 3px solid #ccc;
+
+			 padding-bottom: 20px;
+			 padding-top: 20px;
+	 }
+	</style>
+
+ </head>
+ <body>
+
+	<H1> WHAtk </H1>
+	<div align="center">Illustration of the web GUI provided by WEBjs</div>
+
+ </BR>
+ 
+
+	<HR>
+	
+	Émission : <input type="text" id="msg2snd-tag" maxlength="50"/>
+	<button onclick="Envoyer();">Envoyer</button>
+  </br>
+
+	Réception : <u id='msg2rcv-tag'>...</u> 
+
+	<script>
+	 function Envoyer() {
+		 // The content could be sent as a string but we illustrate here the
+		 // sending of a more complex object, containing here two fields
+		 let obj = new Object();
+		 obj.type = "msg2snd";
+		 obj.payload = document.getElementById("msg2snd-tag").value;
+		 let json = JSON.stringify(obj);
+		 sendSTR(json);
+	 }
+	</script>
+
+	 
+	<script src="wha-var.js"></script>
+
+ </body>
+</html>

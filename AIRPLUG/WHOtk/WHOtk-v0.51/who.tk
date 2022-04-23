@@ -1,0 +1,140 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish "$0" "$@"
+
+#    who
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+
+# An example of application using communication type whatwho
+
+
+
+### 1. STANDARD INITIALISATION OF THE AIRPLUG COMPATIBLE APPLICATION ###########
+
+# Standard name of the application and language extension ----------------------
+set APP "WHO"
+set app "who"
+set ll  "tk"
+
+# Get environment variables and test the library -------------------------------
+#   APG_PATH gives the path to the AIPLUG folder
+#   APG_LANG give the language to display messages
+if { [ catch {
+		set APG_PATH $env(APG_PATH)
+		set APG_LANG $env(APG_LANG)
+    set libapgfile [open $APG_PATH/LIBAPG$ll/LIBAPG$ll/libapg.$ll r]
+    close $libapgfile
+} ] } {
+    if { [info exists APG_PATH] == 0 } {
+				set APG_PATH "??"
+    }
+    if { [info exists APG_LANG] == 0 } {
+				set APG_LANG "english"
+    }
+		if { $APG_LANG == "french" } {
+				puts stderr "\n\033\[1;31m- $::app\(local\): libapg.tk non trouvee\n \
+                         Verifier l'installation. APG_PATH=$APG_PATH\n \
+                         Se placer dans le repertoire bin, faire source config.sh\n \
+                         Se reporter a la documentation en ligne. Contacter l'equipe Airplug.\
+                         \033\[0;00m\n"
+		} else {
+				puts stderr "\n\033\[1;31m- $::app\(local\): libapg.tk not found\n \
+                         Check the installation. APG_PATH=$APG_PATH\n \
+                         In the bin directory, type source config.sh\n \
+                         See the on-line documentation. Contact the Airplug team.\
+                         \033\[0;00m\n"
+		}				
+    exit
+} else {
+    source $APG_PATH/LIBAPGtk/LIBAPGtk/libapg.tk
+		if { $APG_LANG == "french" } {
+				APG_vrb_dispnotif "utilisation de la distribution airplug $APG_PATH"
+		} else {
+				APG_vrb_dispnotif "using the Airplug distribution $APG_PATH"
+		}
+}
+	      
+# Variables overloading --------------------------------------------------------
+#   Default values set by LIBAPG may be overloaded here.
+set APP_apropos \
+"WHO v0.5
+application template for whatwho communications
+Bertrand Ducourthial AT utc.fr
+Lab. Heudiasyc, UMR CNRS 7253
+Universite de Technologie de Compiegne
+See license.txt"
+set APP_help \
+"
+Application template for whatwho communications
+"
+
+
+### 2. ADDING APPLICATION COMPONENTS ###########################################
+
+# Loading applications components ----------------------------------------------
+source $PATH/who-snd.tk
+source $PATH/who-rcv.tk
+source $PATH/who-svg.tk
+
+# Adding GUI area --------------------------------------------------------------
+APG_int_addzone snd "Emissions" 1
+APG_int_addzone rcv "Receptions" 1
+
+APG_int_displayzones
+
+
+
+### 3. DEFINING START/STOP PROCEDURES ##########################################
+
+#-- Procedure WHO_start -------------------------------------------------------#
+# Action : start the application                                               #
+# Remark : called by APG_start                                                 #
+# Input  : nothing                                                             #
+# Output : nothing                                                             #
+#------------------------------------------------------------------------------#
+proc WHO_start { } {
+
+		APG_vrb_dispnotif "Starting WHO" "WHO_start" 3
+    
+    # Abonnements
+		#   WHO doit s'abonner a elle meme
+		#   (en communication de type whatwho et whatwhowhere)
+		APG_begin_air "WHO"
+		#   Pour tester les abonnements entre applications, decommenter les
+		#   lignes suivantes
+		# APG_begin_air "WHA"
+		# APG_begin_air "WHE"
+    
+    # Le bouton Envoyer de la zone d'emission devient "actif"
+    .snd.bt configure -state active
+
+    # Touche entree sur les sous-zones de saisies => emission
+    bind .snd.msg.v <Return> {
+				.snd.bt configure -relief sunken
+				APG_send_whatwho $WHO_snd_msg $WHO_snd_app
+				after 10 {  .snd.bt configure -relief raised }
+    }
+    bind .snd.app.v <Return> {
+				.snd.bt configure -relief sunken
+				APG_send_whatwho $WHO_snd_msg $WHO_snd_app
+				after 10 {  .snd.bt configure -relief raised }
+    }
+}
+
+#-- Procedure WHO_stop --------------------------------------------------------#
+# Action : stop the application                                                #
+# Remark : called by APG_stop                                                  #
+# Input  : nothing                                                             #
+# Output : nothing                                                             #
+#------------------------------------------------------------------------------#
+proc WHO_stop { } {
+		APG_vrb_dispnotif "Stopping WHO" "WHO_stop" 3
+}
+################################################################################
+
+
+### 4. LAUNCHING THE APPLICATION ###############################################
+APG_init
