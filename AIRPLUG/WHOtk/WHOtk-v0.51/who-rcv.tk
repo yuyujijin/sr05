@@ -1,0 +1,39 @@
+#    who
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### MODULE RECEPTION ##########################################################
+
+
+### VARIABLES DU MODULE #######################################################
+# dernier message recu
+set WHO_rcv_msg $APG_msg_unknown
+set WHO_rcv_app $APG_msg_unknown
+###############################################################################
+
+### ZONE DU MODULE ############################################################
+labelframe .rcv -pady 2 -padx 2 \
+    -text "Réception \[$APP, ident = $APG_ident\]"  -fg $APG_int_coltitle
+label .rcv.msg -textvariable WHO_rcv_msg -width 64
+label .rcv.app -textvariable WHO_rcv_app -width 4
+pack .rcv.msg -side left -pady 2 -expand true -fill both
+pack .rcv.app -side left -fill y -pady 2 -expand false
+###############################################################################
+
+
+### PROCEDURE DU MODULE #######################################################
+
+#-- Procedure APG_receive_whatwho --------------------------------------------#
+# Action : reception d'un message                                             #
+# Remarq : Surcharge de la procedure de LIBAPGTK                              #
+# Entree : le payload what et l'app emettrice who                             #
+# Retour : rien                                                               #
+#-----------------------------------------------------------------------------#
+proc APG_receive_whatwho { what who } {
+    set ::WHO_rcv_msg $what
+    set ::WHO_rcv_app $who
+
+    update
+}
+###############################################################################

@@ -1,0 +1,136 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish "$0" "$@"
+
+#    wha
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+
+# An example of application using communication type what
+
+
+
+### 1. STANDARD INITIALISATION OF THE AIRPLUG COMPATIBLE APPLICATION ###########
+
+# Standard name of the application and language extension ----------------------
+set APP "WHA"
+set app "wha"
+set ll  "tk"
+
+# Get environment variables and test the library -------------------------------
+#   APG_PATH gives the path to the AIPLUG folder
+#   APG_LANG give the language to display messages
+if { [ catch {
+		set APG_PATH $env(APG_PATH)
+		set APG_LANG $env(APG_LANG)
+    set libapgfile [open $APG_PATH/LIBAPG$ll/LIBAPG$ll/libapg.$ll r]
+    close $libapgfile
+} ] } {
+    if { [info exists APG_PATH] == 0 } {
+				set APG_PATH "??"
+    }
+    if { [info exists APG_LANG] == 0 } {
+				set APG_LANG "english"
+    }
+		if { $APG_LANG == "french" } {
+				puts stderr "\n\033\[1;31m- $::app\(local\): libapg.tk non trouvee\n \
+                         Verifier l'installation. APG_PATH=$APG_PATH\n \
+                         Se placer dans le repertoire bin, faire source config.sh\n \
+                         Se reporter a la documentation en ligne. Contacter l'equipe Airplug.\
+                         \033\[0;00m\n"
+		} else {
+				puts stderr "\n\033\[1;31m- $::app\(local\): libapg.tk not found\n \
+                         Check the installation. APG_PATH=$APG_PATH\n \
+                         In the bin directory, type source config.sh\n \
+                         See the on-line documentation. Contact the Airplug team.\
+                         \033\[0;00m\n"
+		}				
+    exit
+} else {
+    source $APG_PATH/LIBAPGtk/LIBAPGtk/libapg.tk
+		if { $APG_LANG == "french" } {
+				APG_vrb_dispnotif "utilisation de la distribution airplug $APG_PATH"
+		} else {
+				APG_vrb_dispnotif "using the Airplug distribution $APG_PATH"
+		}
+}
+	      
+# Variables overloading --------------------------------------------------------
+#   Default values set by LIBAPG may be overloaded here.
+set APP_apropos \
+"WHA v0.5
+application template for what communications
+Bertrand Ducourthial AT utc.fr
+Lab. Heudiasyc, UMR CNRS 7253
+Universite de Technologie de Compiegne
+See license.txt"
+set APP_help \
+"
+Application template for what communications
+"
+
+
+### 2. ADDING APPLICATION COMPONENTS ###########################################
+
+# Loading applications components ----------------------------------------------
+source $PATH/wha-snd.tk
+source $PATH/wha-rcv.tk
+source $PATH/wha-web.tk
+source $PATH/wha-svg.tk
+
+# Adding GUI area --------------------------------------------------------------
+APG_int_addzone snd "Emissions" 1
+APG_int_addzone rcv "Réceptions" 1
+
+APG_int_displayzones
+
+
+
+### 3. DEFINING START/STOP PROCEDURES ##########################################
+
+#-- Procedure WHA_start -------------------------------------------------------#
+# Action : start the application                                               #
+# Remark : called by APG_start                                                 #
+# Input  : nothing                                                             #
+# Output : nothing                                                             #
+#------------------------------------------------------------------------------#
+proc WHA_start { } {
+
+		APG_vrb_dispnotif "Starting WHA" "WHA_start" 3
+    
+    # Abonnements
+		#   WHA doit s'abonner a elle meme
+		#   (en communication de type whatwho et whatwhowhere)
+		APG_begin_air "WHA"
+		#   Pour tester les abonnements entre applications, decommenter les
+		#   lignes suivantes
+		# APG_begin_air "WHO"
+		# APG_begin_air "WHE"
+    
+    # Maintenant que l'application est lancee,
+    #   le bouton Envoyer de la zone d'emission devient "actif"
+    .snd.bt configure -state active
+    #   touche entree sur la sous-zone de saisie => emission
+    bind .snd.msg.v <Return> {
+				.snd.bt configure -relief sunken
+				APG_send_what $WHA_snd_msg
+				after 10 {  .snd.bt configure -relief raised }
+    }
+}
+
+#-- Procedure WHA_stop --------------------------------------------------------#
+# Action : stop the application                                                #
+# Remark : called by APG_stop                                                  #
+# Input  : nothing                                                             #
+# Output : nothing                                                             #
+#------------------------------------------------------------------------------#
+proc WHA_stop { } {
+		APG_vrb_dispnotif "Stopping WHA" "WHA_stop" 3
+}
+
+
+### 4. LAUNCHING THE APPLICATION ###############################################
+APG_init
+

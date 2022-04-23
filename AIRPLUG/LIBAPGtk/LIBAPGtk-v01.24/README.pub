@@ -1,0 +1,21 @@
+- Common libraries are currently
+  libapg-vrb.tk
+  libapg-int.tk
+	libapg-eve.tk
+	libapg-svg.tk
+  libapg-msg.tk
+	libapg-com.tk
+	libapg-sta.tk
+- Term mode libraries are
+  libapg-snd.tk
+	libapg-rcv.tk
+	libapg-sub.tk
+- Emu mode libraries are
+  Term mode libraries
+	libapg-emu.tk (provided by EMU, ie. symbolic link)
+- Rmt mode libraries are
+  Term mode libraries
+	libapg-rmt.tk (provided by RMT, ie. symbolic link)
+- Live mode libraries are
+  Term mode libraries (except sub)
+	libapg-apg.tk (provided by APG, ie. symbolic link)

@@ -1,0 +1,59 @@
+#    who
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### MODULE EMISSION ###########################################################
+
+
+### VARIABLES DU MODULE #######################################################
+set WHO_snd_msg "Hello World"
+set WHO_snd_app $APP
+
+###############################################################################
+
+
+### ZONE GRAPHIQUE DU MODULE ##################################################
+
+# Definition de la zone horizontale
+# NB : cette zone est affichee (pack) avec l'instruction
+#      APG_int_addzone snd "Emissions" 1 du fichier who.tk,
+#      qui l'ajoute egalement dans le menu.
+
+labelframe .snd -pady 2 -padx 2 \
+    -text "Emission \[$APP, ident = $APG_ident\]" -fg $APG_int_coltitle
+
+# Definition de la sous-zone de saisie pour le message
+labelframe .snd.msg -text "message"
+entry .snd.msg.v -width 64 -textvariable WHO_snd_msg
+pack .snd.msg.v
+
+# Definition de la sous-zone de saisie pour l'application destinatrice
+labelframe .snd.app -text "app"
+entry .snd.app.v -width 4 -textvariable WHO_snd_app
+pack .snd.app.v
+
+# Definition du bouton Envoyer
+button .snd.bt -text "Envoyer" \
+    -activebackground $APG_int_colbutton \
+    -foreground $APG_int_colbutton \
+    -font $APG_int_fnbutton \
+    -width 10 \
+    -state disable \
+    -command {
+				APG_send_whatwho $WHO_snd_msg $WHO_snd_app
+    }
+
+# Affichage des sous-zones de la zone snd
+pack .snd.bt .snd.msg .snd.app -side left -fill y -pady 2
+
+
+###############################################################################
+
+
+### PROCEDURE DU MODULE #######################################################
+# NB : ici les traitements sont effectues dans la commande associee au bouton.
+
+###############################################################################
+
+

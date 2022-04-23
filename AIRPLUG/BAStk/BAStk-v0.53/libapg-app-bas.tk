@@ -1,0 +1,20 @@
+#    libapg-app-bas.tk
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr
+#    license type: Free of charge license for academic and research purpose
+#    see license.txt
+#
+#    library for BAS application, a skeleton base application for teaching
+
+APG_vrb_dispnotif "      Adding BAS facilities" "libapg-app-bas" 4
+
+
+# NB: Such mnemonics are given in this library for illustration purpose. A
+#     preferable solution would be to use generic mnemonics of libapg-msg.tk
+#     when possible for uniformity purpose.
+
+# Mnemonic for the payload dans les messages
+set ::APG_bas_mnemopayload "baspl"
+
+# Mnemonic for the sequence number
+set ::APG_bas_mnemonseq "bassq"

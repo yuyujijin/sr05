@@ -1,0 +1,96 @@
+#    wha
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### MODULE SAUVEGARDE #########################################################
+
+# Permet de sauvegarder dans un fichier des informations sur le deroulement
+# de l'execution. Soit periodiquement si frequence non nulle, soit lors
+# d'evenements particuliers (eg. reception message).
+# Cf. libapg-svg.tk
+
+set WHA_svg_counter 0
+set WHA_svg_sumdelays 0
+
+#-- Procedure APG_svg_formatdata ---------------------------------------------#
+# Action : formate les donnees pour les sauvegardes evenementielles. Permet   #
+# par exemple de sauvegarder certaines variables espacees par un delimiteur   #
+# pour utilisation dans un tableur.                                           #
+# Remarq : surcharge de la procedure de libapg-svg.tk                         #
+# Entree : rien                                                               #
+# Retour : donnee formatee, qui sera ecrite dans le fichier de sauvegarde.    #
+#-----------------------------------------------------------------------------#
+proc APG_svg_formatdata { } {
+
+		# Current time in milliseconds
+		set current_time_ms [clock clicks -milliseconds]
+
+		# Computing the delay since the last saving
+		# NB : only if this is the second saving, ie. if WHA_svg_lasttime exists
+		if { [info exists ::WHA_svg_lasttimems ] } {
+
+				# Computing the delay since the last saving
+				set current_delay [expr $current_time_ms - $::WHA_svg_lasttimems]
+
+				# Updating WHA_svg_lasttimems for the next saving
+				set ::WHA_svg_lasttimems $current_time_ms
+
+				# Adding this delay to the sum
+				incr ::WHA_svg_sumdelays $current_delay
+
+				# One more value added to the sum
+				incr ::WHA_svg_counter
+
+				APG_vrb_dispdebug "sumdelays $::WHA_svg_sumdelays, counter = $::WHA_svg_counter"
+
+				# Return a string that will be written into the saving file
+				return "$::WHA_snd_msg $::APG_svg_delim $::WHA_rcv_msg $::APG_svg_delim $current_delay"
+		} else {
+				# Updating WHA_svg_lasttimems for the next saving
+				set ::WHA_svg_lasttimems $current_time_ms
+
+				APG_vrb_dispdebug "sumdelays $::WHA_svg_sumdelays, counter = $::WHA_svg_counter"
+
+				# Return a string that will be written into the saving file
+				return "$::WHA_snd_msg $::APG_svg_delim $::WHA_rcv_msg"
+		}
+}
+
+#-- Procedure APG_svg_formatfirstdata ----------------------------------------#
+# Action : formate l'entete du fichier de sauvegarde. Permet par exemple de   #
+# mettre des titres de colonnes lors d'une post-analyse dans un tableur, ou   #
+# de sauvegarder les conditions de l'execution (parametres)                   #
+# Remarq : surcharge de la procedure de libapg-svg.tk                         #
+# Entree : rien                                                               #
+# Retour : donnee formatee, qui sera ecrite dans le fichier de sauvegarde.    #
+#-----------------------------------------------------------------------------#
+proc APG_svg_formatfirstdata { } {
+		# Return a string that will be written at the top of the saving file
+		return "Last sent message $::APG_svg_delim Last receive message $::APG_svg_delim Delay since last saving"
+}
+
+
+#-- Procedure APG_svg_formatlastdata -----------------------------------------#
+# Action : formate la derniere ecriture dans le fichier. Permet par exemple   #
+# de sauvegarder des calculs finaux, des moyennes...                          #
+# Remarq : surcharge de la procedure de libapg-svg.tk                         #
+# Entree : rien                                                               #
+# Retour : donnee formatee, qui sera ecrite dans le fichier de sauvegarde.    #
+#-----------------------------------------------------------------------------#
+proc APG_svg_formatlastdata { } {
+		# Computing the mean delay
+		APG_vrb_dispdebug "sumdelays $::WHA_svg_sumdelays, counter = $::WHA_svg_counter"
+
+		if { $::WHA_svg_counter != 0 } {
+				set mean [expr $::WHA_svg_sumdelays * 1.0 / $::WHA_svg_counter]
+		} else {
+				set mean $::APG_msg_unknown
+		}
+
+		# Returing a string that will be written at the bottom of the saving file
+		return "Number of saving $::APG_svg_delim $::WHA_svg_counter $::APG_svg_delim $::APG_svg_delim Mean of the delays $::APG_svg_delim $mean"
+
+}
+
+

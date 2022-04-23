@@ -1,0 +1,1 @@
+../WHAtk/WHAtk/bin/demo-wha-ring.sh

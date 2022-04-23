@@ -1,0 +1,6 @@
+Pour supprimer les liens symboliques cassés :
+find -L . -type l | xargs rm
+
+-L suit tous les liens valides pour appliquer les autres critères aux
+   fichiers au bout des liens. Si le lien est cassé, le filtre (ici
+   -type l signifie "est un lien") s'applique au fichier de départ.
