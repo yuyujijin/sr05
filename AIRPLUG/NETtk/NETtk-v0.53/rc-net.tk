@@ -1,0 +1,13 @@
+#    net
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr, Anthony Buisset (v0.1)
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+###############################################################################
+
+APG_vrb_dispnotif "  Loading rc-net.tk (default parameters)" "rc-net" 3
+
+### Setting for module net-rcv.tk #############################################
+# Mnemonic for the NET header, containing the name of the app which sent the
+# message carried by NET
+set NET_rc_rcvmnemoapp "appnet"

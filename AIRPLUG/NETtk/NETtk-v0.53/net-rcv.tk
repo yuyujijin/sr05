@@ -1,0 +1,103 @@
+#    net
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr, Anthony Buisset (v0.1)
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### MODULE RECEPTION ###########################################################
+
+APG_vrb_dispnotif "  Loading net-rcv.tk (receiving module)" "net-rcv" 3
+
+### 1. MODULE VARIABLES #########################################################
+# Last received message
+set NET_rcv_msg $APG_msg_unknown
+
+# Sending application of the last received message (when using option --whatwho)
+set NET_rcv_app $APG_msg_unknown
+
+# Mnemonic for the application that generated the message
+set NET_rcv_mnemoapp $NET_rc_rcvmnemoapp
+
+
+### 2. MODULE GUI ###############################################################
+labelframe .netrcv -pady 2 -padx 2 \
+    -text "Réception \[$APP, ident = $APG_ident\]"  -fg $APG_int_coltitle
+
+label .netrcv.t1 -text "Dernier message reçu de "
+label .netrcv.app -textvariable NET_rcv_app -width 4 -fg $APG_int_colmsgrcv
+label .netrcv.t2 -text " : "
+label .netrcv.msg -textvariable NET_rcv_msg -width 64  -fg $APG_int_colmsgrcv -anchor w
+pack .netrcv.t1 .netrcv.app .netrcv.t2 .netrcv.msg -side left -fill y -pady 2
+
+# affichage des sous-zones de la zone rcv
+pack .netrcv.msg .netrcv.app -side left -fill y -pady 2
+
+
+### 3. DECODING COMMAND LINE OPTIONS OF THE MODULE ##############################
+
+
+### 4. PROCEDURES OF THE GUI OF THE MODULE ######################################
+
+
+### 5. PROCEDURES OF THE MODULE #################################################
+
+#-- Procedure APG_receive_whatwho ----------------------------------------------#
+# Action : gere la reception de messages                                        #
+# Remarq : surcharge de LIBAPGTK                                                #
+# Entree : payload et emetteur                                                  #
+# Retour : rien                                                                 #
+#-------------------------------------------------------------------------------#
+proc APG_receive_whatwho { what who } {
+
+		# Mise a jour de l'interface du module rcv.
+    set ::NET_rcv_msg $what
+    set ::NET_rcv_app $who
+
+		# Traitement different selon l'emetteur.
+    switch -- $::NET_rcv_app \
+				$::APP {
+						# Reception d'un message d'une application NET distante,
+						# => transfert vers l'application BAS locale.
+						
+						# Recuperation de la valeur du champs application emettrice dans le
+						# message recu.
+						set app [APG_msg_splitstr what $::NET_rcv_mnemoapp]
+
+						# Recuperation eventuelle d'autres champs.
+
+						# Ajout eventuel de traitements ici.
+
+						# Recuperation du message qui a ete concatene au header
+						# a l'emission. NET_rcv_mnemoapp doit etre le dernier mnemonique
+						# avant le message concatene. Adapter si des champs ont ete ajoutes.
+						set msg [APG_msg_endstr what $::NET_rcv_mnemoapp true]
+
+						# Transfert du message a l'application locale $app
+						NET_snd_send $msg $app
+				} \
+				default {
+						# Reception d'un message d'une application autre que NET.
+						# On suppose donc qu'il s'agit d'une application locale dont les
+						# communications sont interceptees par NET pour realiser un controle
+						# sur son execution.
+						# => transfert vers les applications NET distantes.
+						
+						# Ajout eventuel de traitements ici.
+
+
+						# Creation d'un header contenant l'application emettrice.
+						# Utilisation d'un mnemonique pour retrouver ce champs
+						# facilement a la reception.
+						set header [APG_msg_createmsg $::NET_rcv_mnemoapp $who]
+
+						# Ajout eventuel d'autres champs dans le header ici.
+
+						# Formation du message en concatenant le header et le message recu.
+						set msg [APG_msg_concatemsg $header $what]
+
+						# Appel de la procedure d'emission pour emettre le message msg
+						# vers d'autres applications NET (cette procedure permet de mettre
+						# a jour l'interface du module snd). NB : $::APP = "NET".
+						NET_snd_send $msg $::APP
+				}
+}
+
