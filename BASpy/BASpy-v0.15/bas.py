@@ -49,6 +49,9 @@ self.received_source.config(text="{}")
 self.received_payload.config(text="{}")
 self.received_nseq.config(text="{}")
 """.format(src, received_message.payload(), received_message.nseq()))
+
+            # Traitement de la donnée reçu
+            
             
         else:
             self.vrb_dispwarning("Application {} not started".format(self.APP()))
