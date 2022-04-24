@@ -3,24 +3,20 @@ import os
 import sys
 sys.path.append(os.path.abspath("{}/LIBAPGpy/LIBAPGpy".format(os.environ["APG_PATH"])))
 import libapg as apg
-import horlogelogique as hlg
-
+from request import BASStatus
 
 class BASMessage(apg.msg.Message):
     """Application-specific message treatment"""
-    def __init__(self, text, app, nsite=None, payload=None, nseq=None, clock : hlg.Horloge = None):
+    def __init__(self, text, app, payload=None, nseq=None, rqsttype=None):
         super().__init__(text, app)
-        self.fields += ["payload","nseq","clock","id"]
+        self.fields += ["payload","nseq","rqsttype"]
 
         if payload != None:
             self.content["payload"] = payload
         if nseq != None :
             self.content["nseq"] = nseq
-        if clock != None:
-            self.content["clock"] = str(clock)
-        # Pour identifier le site
-        if nsite != None:
-            self.content["nsite"] = nsite
+        if rqsttype != None:
+            self.content["rqsttype"] = rqsttype
 
         if len(text) > 0:
             self.parse_text(text)
@@ -30,20 +26,12 @@ class BASMessage(apg.msg.Message):
         return self.content["payload"]
     def nseq(self):
         return self.content["nseq"]
-    def clock(self):
-        return self.content["clock"]
-    def nsite(self):
-        return self.content["nsite"]
     
 class BASApp(apg.Application):
 
     def __init__(self):
         default_options_values={"default-msg":"No data required","appname":"BAS","whatwho":True,"delay":"1"}
         super().__init__(default_options_values)
-
-        # nsite est nécessaire pour l'estempillage : on doit avoir un numéro de site
-        self.mandatory_parameters += ["nsite"]
-
         self.msg = self.params["default-msg"]
 
         # self.destination_app=self.APP()
@@ -56,17 +44,12 @@ class BASApp(apg.Application):
         self.nseq = 0
         self.sending_in_progress = None
 
-        # Ajout de l'horloge
-        self.clock = hlg.Horloge()
-
         if self.check_mandatory_parameters():
             self.config_gui()
             self.end_initialisation()
 
     def receive(self, pld, src, dst, where):
         if self.started  and self.check_mandatory_parameters():
-            # Traitement de la donnée reçu
-
             # Log
             self.vrb("{}.rcv(pld={}, src={}, dst={}, where={})".format(self.APP(),pld, src, dst, where), 6)
 
@@ -107,13 +90,10 @@ self.received_nseq.config(text="{}")
             self.period = float(graphic_period.get())
 
         # Création d'un BASMessage
-        message = BASMessage("", self, self.params["nsite"], self.msg, self.nseq, self.clock)
+        message = BASMessage("", self, self.msg, self.nseq, BASStatus.DEMANDESC)
 
         # Envoie
         self.snd(str(message), who=self.destination_app, where=self.destination_zone)
-
-        # Màj horloge
-        self.clock.incr()
 
         # Incrémentation du nseq
         self.nseq += 1
