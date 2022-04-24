@@ -1,0 +1,91 @@
+# license type: free of charge license for academic and research purpose
+# see license.txt
+# author: Bertrand Ducourthial
+# revision: 27/09/2021
+
+# Configuration file for layer 3 generic Makefile.
+# This file is standard for all applications
+#  - not distributed in the skeleton distribution (the nest)
+#  - not distributed in the binary distribution (or as binary package)
+#    (ie. application that does not require any compilation)
+
+
+### APPLICATION DEPENDENT VARIABLES ############################################
+
+#-- Setting the type of contribution this directory provides ------------------#
+#   Makefile for an application
+TYPE=app
+
+# Determining the file extension (language) from the directory name -----------#
+# NB: Assuming the directory is of the form WHA, WHAtk, WHApy, etc.
+#     If no lower cases are found, the default is tk.
+# NB: ll is the extension in lower case, LL in uppercase.
+L = $(shell pwd | rev | cut -d'/' -f 2 | rev | sed s/^[[:upper:]]*//)
+ll = $(shell if [ "x$(L)" = "x" ] ; then echo "tk" ; else echo $(L) ; fi )
+
+# Determining the source files ------------------------------------------------#
+# NB: Assuming the files of the application are of the form
+#     - rc-$(OUTPUT).ll such as rc-wha.tk for a resource file with the default
+#       parameters values.
+#     - $(OUTPUT)-module.ll such as wha-snd.tk for a source file
+#     - libapg-app-$(OUTPUT).ll such as libapg-app-wha.tk for a library file to
+#       be installed in APG_PATH/APG_PATH/LIBAPGtk).
+# NB: Adding a new module or a new file to the application does not require
+#     to adapt the variables values below providing the file has been named
+#     according to the rule: nameoftheapplication-nameofthemodule.language
+#     such as wha-rcv.tk
+
+# RC is either empty or equal to rc-$(OUTPUT).$(ll) if it exists
+RC = $(wildcard rc-$(OUTPUT).$(ll))
+
+# LIB is either empty or equal to libapg-app-$(OUTPUT).?? if it exists
+# NB: an app may provide a lib for several languages.
+# NB: some app (eg. "hen") provide a complement to libapg (libapg-???.??).
+LIB = $(wildcard libapg-app-$(OUTPUT).?? libapg-$(OUTPUT).??)
+
+# SOURCES stands for all sources files belonging to the application
+# NB: wildcard does the immediat expansion.
+# NB: this expression takes into account files such as xxx_yyy.tk or xxx_yyy.py.
+SOURCES = $(wildcard $(OUTPUT)*.$(ll)) $(RC) $(LIB) 
+
+
+#-- FILES FOR APPLICATION PACKAGING--------------------------------------------#
+
+# List of all files for the public archive
+# NB: any file in the bin, doc, icons or input subdirectories of the application
+#     will be installed (with symlink) in the bin, doc, icons or input/$(OUTPUT)
+#     directory of the distribution.
+# NB: if one of these subdirectories is listed here but does not exist,
+#     it is ignored silently.
+#     a warning is generated.
+# NB: Add both directory_name and directory_name/* (such as bin and bin/*)
+TGZ_PUB = \
+	Makefile Makefile-var Makefile-bin \
+	license.txt \
+	README.pub \
+	tgz-history.txt \
+	$(SOURCES) \
+	bin \
+	bin/* \
+	doc \
+	doc/* \
+	input \
+	input/* \
+	icons \
+	icons/* \
+	web \
+	web/*
+
+# List of all files for the devel archive
+TGZ_DEV = $(TGZ_PUB) \
+	README.dev \
+	icon/*obj \
+	dev \
+	dev/*
+
+# List of all files for the distribution skeleton archive
+TGZ_SKL =
+
+# List of all files for the binary distribution
+TGZ_BIN =
+

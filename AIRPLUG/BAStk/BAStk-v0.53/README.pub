@@ -1,4 +1,0 @@
-OPTIONS
-	--dest=APP	: definit APP comme application destinatrice
-	--delay=del	: definit une periode d'emission de del ms
-	
