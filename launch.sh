@@ -30,7 +30,7 @@ print_with_time "Lauching ${bold}$1${normal} application.s..."
 for i in $(seq 0 $(($1 - 1)))
 do
     bin/bas.py --nsite=$i > /tmp/net_in$i < /tmp/bas_in$i &
-    bin/net.py --nsite=$i --nmax=$1 < /tmp/net_in$i | tee /tmp/net_in[^$i]* /tmp/bas_in$i &
+    bin/net.py --nsite=$i --nmax=$1 < /tmp/net_in$i | tee /tmp/net_in[^$i]* > /tmp/bas_in$i &
 done
 
 print_with_time "${bold}All done!${normal}"

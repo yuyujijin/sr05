@@ -212,8 +212,6 @@ class NETApp(apg.Application):
                                     ei = self.tab[int(self.params["nsite"])]
                                     ek = self.tab[k]
                                     # not (<_2)
-                                    print(ei[1],ek[1], self.params["nsite"],k, file = sys.stderr)
-
                                     if not (ei[1] < ek[1] or (ei[1] == ek[1] and int(self.params["nsite"]) < k)) :
                                         update = False
                                         break
