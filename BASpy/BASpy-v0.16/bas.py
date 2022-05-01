@@ -45,6 +45,13 @@ class BASApp(apg.Application):
         self.sending_in_progress = None
 
         if self.check_mandatory_parameters():
+            if "nsite" in self.params:
+                # Changement du titre de la fenêtre pour simplifier
+                nsite = self.params["nsite"]
+                self.gui.root.title(f"BAS #{nsite}")
+            else :
+                self.gui.root.title(f"BAS #???")
+
             self.config_gui()
             self.end_initialisation()
 
