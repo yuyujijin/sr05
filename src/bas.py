@@ -50,6 +50,16 @@ class Bas(App):
 
         if request == BASStatus.DEBUTSC:
             self.BASDebutSC()
+        elif request == BASStatus.UPDATE:
+            # check if every fields is here
+            required_fields = ["account1", "account2", "amount"]
+            for e in required_fields:
+                if e not in content:
+                    printerr("[{}] missing field '{}' in msg from [{}] for {}".format(
+                        self.__appname__(), e, msg["src"], request))
+                    return
+            self.BASDemandeSC(int(content["account1"]), int(
+                content["account2"]), int(content["amount"]))
         else:
             printerr("[{}] received msg seem to have an incorrect request type from [{}]".format(
                 self.__appname__(), msg["src"]))
