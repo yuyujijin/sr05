@@ -8,9 +8,6 @@ print_with_time(){
     echo "${bold}[$now]${normal} $1"
 }
 
-# For source
-print_with_time "${bold}Don't forget to source ./bin/config.sh!${normal}"
-
 # Remove pipes
 print_with_time "Removing pipes in /tmp..."
 rm -f /tmp/bas_* /tmp/net_*
@@ -29,8 +26,8 @@ print_with_time "Creating done!"
 print_with_time "Lauching ${bold}$1${normal} application.s..."
 for i in $(seq 0 $(($1 - 1)))
 do
-    bin/bas.py --nsite=$i > /tmp/net_in$i < /tmp/bas_in$i &
-    bin/net.py --nsite=$i --nmax=$1 < /tmp/net_in$i | tee /tmp/net_in[^$i]* > /tmp/bas_in$i &
+    python3 src/bas.py --ident=$i > /tmp/net_in$i < /tmp/bas_in$i &
+    python3 src/net.py --ident=$i --nsite=$1 < /tmp/net_in$i | tee /tmp/net_in[^$i]* > /tmp/bas_in$i &
 done
 
 print_with_time "${bold}All done!${normal}"

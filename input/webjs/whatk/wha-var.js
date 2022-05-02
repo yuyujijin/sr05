@@ -1,1 +1,0 @@
-../../../WHAtk/WHAtk/web/wha-var.js
