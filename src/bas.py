@@ -58,7 +58,7 @@ class Bas(App):
                     printerr("[{}] missing field '{}' in msg from [{}] for {}".format(
                         self.__appname__(), e, msg["src"], request))
                     return
-            self.BASDemandeSC(int(content["account1"]), int(
+            self.BASUpdateSC(int(content["account1"]), int(
                 content["account2"]), int(content["amount"]))
         else:
             printerr("[{}] received msg seem to have an incorrect request type from [{}]".format(
@@ -79,11 +79,34 @@ class Bas(App):
         msg = mg.Message(_values={"rqsttype": BASStatus.DEMANDESC,
                                   "account1": account1, "account2": account2, "amount": amount})
         self.send(msg=msg, who="NET")
+    
+    def BASUpdateSC(self, account1: int, account2: int, amount: int ):
+        self.lastrequest = {"account1": int(account1),
+                            "account2": int(account2), "amount": int(amount)}
+
+        # update values
+        self.updateValues()
 
     def BASDebutSC(self):
         self.sc = True
         printerr("[{}] now have access to SC".format(self.__appname__()))
 
+        # update values
+        self.updateValues()
+        
+        # then send end of SC
+        self.BASFinSC()
+
+    def BASFinSC(self):
+        msg = mg.Message(_values={"rqsttype": BASStatus.FINSC, 
+         "account1" : self.lastrequest["account1"],
+         "account2" : self.lastrequest["account2"],
+         "amount" : self.lastrequest["amount"]})
+        self.send(msg=msg, who="NET")
+        self.sc = False
+        printerr("[{}] released acces to SC".format(self.__appname__()))
+
+    def updateValues(self):
         # retrieve amounts
         self.accounts[self.lastrequest["account1"]
                       ] += self.lastrequest["amount"]
@@ -96,15 +119,6 @@ class Bas(App):
                 self.lastrequest["account1"], self.accounts[self.lastrequest["account1"]])
             self.window.updateListe(
                 self.lastrequest["account2"], self.accounts[self.lastrequest["account2"]])
-        # then send end of SC
-        self.BASFinSC()
-
-    def BASFinSC(self):
-        msg = mg.Message(_values={"rqsttype": BASStatus.FINSC})
-        self.send(msg=msg, who="NET")
-        self.sc = False
-        printerr("[{}] released acces to SC".format(self.__appname__()))
-
 
 class BasWindow:
     def __init__(self):
