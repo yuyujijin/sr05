@@ -53,14 +53,7 @@ class Net(App):
             request = BASStatusFromStr(content["rqsttype"])
 
             if request == BASStatus.DEMANDESC:
-                required_fields = ["account1", "account2", "amount"]
-                for e in required_fields:
-                    if e not in content:
-                        printerr("[{}] missing field '{}' in msg from [{}]".format(
-                            self.__appname__(), e, msg["src"]))
-                        return
-                self.BASDemandeSc(int(content["account1"]), int(
-                    content["account2"]), int(content["amount"]))
+                self.BASDemandeSc()
             elif request == BASStatus.FINSC:
                 required_fields = ["account1", "account2", "amount"]
                 for e in required_fields:
@@ -68,8 +61,8 @@ class Net(App):
                         printerr("[{}] missing field '{}' in msg from [{}]".format(
                             self.__appname__(), e, msg["src"]))
                         return
-                self.BASFinSc(int(content["account1"]), int(
-                    content["account2"]), int(content["amount"]))
+                self.BASFinSc(account1 = int(content["account1"]), account2 = int(
+                    content["account2"]), amount = int(content["amount"]))
             else:
                 printerr("[{}] received msg seem to have an incorrect request type from [{}]".format(
                     self.__appname__(), msg["src"]))
@@ -100,15 +93,15 @@ class Net(App):
                         printerr("[{}] missing field '{}' in msg from [{}] for {}".format(
                             self.__appname__(), e, msg["src"], request))
                         return
-                self.NETLiberation(int(content["account1"]), int(
-                    content["account2"]), int(content["amount"]), h_clock=clk, ident=ident)
+                self.NETLiberation(account1 = int(content["account1"]), account2 = int(
+                    content["account2"]), amount = int(content["amount"]), h_clock=clk, ident=ident)
             elif request == NETStatus.ACCUSE:
                 # check who the message is adressed to
                 if "ackto" in content:
                     ackto = int(content["ackto"])
                     # if it's for us, we treat it, else we ignore
                     if ackto == self.parameters["ident"]:
-                        self.NETAccuse(clk, ident)
+                        self.NETAccuse(h_clock = clk, ident = ident)
             else:
                 printerr("[{}] received msg seem to have an incorrect request type from [{}]".format(
                     self.__appname__(), msg["src"]))
@@ -116,7 +109,7 @@ class Net(App):
         else:
             pass
 
-    def BASDemandeSc(self, account1: int, account2: int, amount: int) -> None:
+    def BASDemandeSc(self) -> None:
         # h_i <- h_i + 1
         self.clk.incr()
         # tab_i[i] <- (requête, h_i)
@@ -124,10 +117,13 @@ class Net(App):
             NETStatus.REQUETE, self.clk.val())
         # envoyer([requête] h_i) à tous les autres sites
         msg = Message(_values={"clk": self.clk.val(),
-                      "ident": self.parameters["ident"], "rqsttype": NETStatus.REQUETE, "account1": account1, "account2": account2, "amount": amount})
+                      "ident": self.parameters["ident"], "rqsttype": NETStatus.REQUETE})
         self.send(msg=msg, who="NET")
 
-    def BASFinSc(self, account1: int, account2: int, amount: int) -> None:
+    def BASFinSc(self, account1: int = None, account2: int = None, amount: int = None) -> None:
+        if account1 == None or account2 == None or amount == None:
+            printerr("[{}] BASFinSC() : one of args is None".format(self.__appname__()))
+            return
         # h_i <- h_i + 1
         self.clk.incr()
         # tab_i[i] <- (requête, h_i)
@@ -161,19 +157,21 @@ class Net(App):
         # si tab_i[i].type == requête et (tab_i[i].date, i) <_2 (tab_i[k].date, k) pour tout k != i
         self.checkSC()
 
-    def NETLiberation(self,account1: int, account2: int, amount: int,  h_clock: Horloge = None, ident: int = None) -> None:
+    def NETLiberation(self,account1: int = None, account2: int = None, amount: int = None,  h_clock: Horloge = None, ident: int = None) -> None:
         if h_clock == None:
             printerr("[{}] None clock".format(self.__appname__()))
             return
         if ident == None:
             printerr("[{}] None ident".format(self.__appname__()))
             return
+        if account1 == None or account2 == None or amount == None:
+            printerr("[{}] NETLiberation() : one of args is None".format(self.__appname__()))
         # h_i <- max(h_i, h) + 1
         self.clk.incr(h_clock)
         # tab_i[j] <- (libération, h)
         self.tab[ident] = (NETStatus.LIBERATION, h_clock.val())
 
-        # dit a son bas d'aussi faire le màj
+        # avant de vérifier si il a accès a la SC, on met a jour le BAS avec les données de la dernière modif
         basmsg = Message(_values={"rqsttype": BASStatus.UPDATE,
                          "account1": account1, "account2": account2, "amount": amount})
         self.send(msg=basmsg, who="BAS")

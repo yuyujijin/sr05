@@ -76,8 +76,7 @@ class Bas(App):
         self.lastrequest = {"account1": int(account1),
                             "account2": int(account2), "amount": int(amount)}
 
-        msg = mg.Message(_values={"rqsttype": BASStatus.DEMANDESC,
-                                  "account1": account1, "account2": account2, "amount": amount})
+        msg = mg.Message(_values={"rqsttype": BASStatus.DEMANDESC})
         self.send(msg=msg, who="NET")
     
     def BASUpdateSC(self, account1: int, account2: int, amount: int ):
