@@ -7,6 +7,8 @@ class NETStatus(Enum):
     REQUETE = "REQ"
     LIBERATION = "LIB"
     ACCUSE = "ACK"
+    SNAPSHOT = "SNAP"
+    ETAT = "ETAT"
 
 
 class BASStatus(Enum):
@@ -14,6 +16,8 @@ class BASStatus(Enum):
     FINSC = 1
     DEBUTSC = 2
     UPDATE = 3
+    SNAPSHOT = 4
+    ETAT = 5
 
 
 def BASStatusFromStr(s: str) -> BASStatus:
