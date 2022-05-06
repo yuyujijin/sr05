@@ -14,3 +14,5 @@ La section critique correspond à l'accès exclusif à la donnée. À vous de vo
 Pour garantir la sauvegarde répartie du système, un algorithme de calcul d'instantané (snapshot) est utilisé.
 On choisira l'un des algorithmes vus en cours (chapitre 6).
 Pour s'assurer de la cohérence de la sauvegarde répartie, on utilisera des horloges vectorielles (chapitre 5) afin de dater les sauvegardes locales et de vérifier a posteriori qu'elles définissent une coupure cohérente.
+
+`sudo apt-get install python3-tk`
