@@ -2,12 +2,15 @@
 
 from cgitb import text
 import random
+import time
 from app import *
 from request import *
 from tkinter import *
 from tkinter import ttk
 import message as mg
 from threading import Thread
+import ast
+from datetime import datetime
 
 
 class Bas(App):
@@ -24,10 +27,19 @@ class Bas(App):
         self.window = None
         self.lastrequest = None
 
+        self.MUTEX = False
+        self.pending = []
+
     def __accounts__(self):
         return self.accounts
 
     def receive(self, input: str = None) -> None:
+        if not self.MUTEX:
+            Thread(target = lambda : self.treatment(input)).start()
+        else:
+            self.pending.append(input)
+
+    def treatment(self, input: str = None) -> None:
         if not input:
             printerr("[{}] received empty message".format(self.__appname__()))
         # parse the input
@@ -60,9 +72,28 @@ class Bas(App):
                     return
             self.BASUpdateSC(int(content["account1"]), int(
                 content["account2"]), int(content["amount"]))
+        elif request == BASStatus.ETAT:
+            self.BASEtat()
+        elif request == BASStatus.SNAPSHOT:
+            # check if every fields is here
+            required_fields = ["data"]
+            for e in required_fields:
+                if e not in content:
+                    printerr("[{}] missing field '{}' in msg from [{}] for {}".format(
+                        self.__appname__(), e, msg["src"], request))
+                    return
+            self.BASSnapEnd(data = content["data"])
         else:
             printerr("[{}] received msg seem to have an incorrect request type from [{}]".format(
                 self.__appname__(), msg["src"]))
+
+        # Launch next message if there is one
+        if len(self.pending) != 0:
+            next = self.pending.pop()
+            self.treatment(next)
+        # Else release the MUTEX
+        else :
+            self.MUTEX = False
 
     def BASDemandeSC(self, account1: int, account2: int, amount: int):
         if self.sc:
@@ -104,6 +135,36 @@ class Bas(App):
         self.send(msg=msg, who="NET")
         self.sc = False
         printerr("[{}] released acces to SC".format(self.__appname__()))
+    
+    def BASSnap(self):
+        # make a snapshot
+        # click
+        data = str(self.accounts)
+
+        msg = mg.Message(_values={"rqsttype" : BASStatus.SNAPSHOT, "data": data})
+        self.send(msg = msg, who = "NET")
+        printerr("[{}] requested a snapshot".format(self.__appname__()))
+
+    def BASEtat(self):
+        # make a snapshot
+        # click
+        data = str(self.accounts)
+        # then send the response
+        msg = mg.Message(_values={"rqsttype" : BASStatus.ETAT, "data" : data})
+        self.send(msg = msg, who = "NET")
+
+    def BASSnapEnd(self, data = None):
+        # transform it into a list
+        L = ast.literal_eval(data)
+
+        filename = "snapshots/{}".format(datetime.now().strftime("%d%m%Y_%H:%M:%S"))
+        
+        with open(filename, "w+") as f:
+            for e in L:
+                for k,v in e.items():
+                    f.write("{} : {}\n".format(str(k), str(v)))
+                f.write("\n")
+
 
     def updateValues(self):
         # retrieve amounts
@@ -167,6 +228,9 @@ class BasWindow:
 
         iptframe.pack()
 
+        # button for snapshot
+        Button(frm, text="Snapshot", command=self.snapshotBas).pack()
+
         frm.pack()
 
         root.mainloop()
@@ -178,6 +242,9 @@ class BasWindow:
         def work(): return self.app.BASDemandeSC(
             self.spb1.get(), self.spb2.get(), self.amount.get())
         Thread(target=work).start()
+
+    def snapshotBas(self) -> None:
+        Thread(target=self.app.BASSnap).start()
 
     def updateListe(self, account: int, amount: int) -> None:
         self.liste.delete(account)
